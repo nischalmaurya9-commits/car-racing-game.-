@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Car Racing Game</title>
+<style>
+body {
+  margin: 0;
+  background: #222;
+  color: white;
+  text-align: center;
+  font-family: Arial;
+}
+canvas {
+  background: #555;
+  display: block;
+  margin: auto;
+  border: 4px solid white;
+}
+button {
+  padding: 12px 25px;
+  margin: 10px;
+  font-size: 18px;
+}
+</style>
+</head>
+<body>
+
+<h2>🏎️ CAR RACING GAME</h2>
+<h3>Score: <span id="score">0</span></h3>
+
+<canvas id="game" width="350" height="550"></canvas>
+<button onclick="startGame()">START / RESTART</button>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let car, enemies, score, speed, running;
+
+function startGame() {
+  car = {x: 150, y: 450, w: 45, h: 75};
+  enemies = [];
+  score = 0;
+  speed = 4;
+  running = true;
+  gameLoop();
+}
+
+function drawCar(x, y, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, 45, 75);
+  ctx.fillStyle = "black";
+  ctx.fillRect(x+5, y+10, 35, 18);
+  ctx.fillRect(x+5, y+48, 35, 15);
+}
+
+function gameLoop() {
+  if (!running) return;
+
+  ctx.fillStyle = "#555";
+  ctx.fillRect(0, 0, 350, 550);
+
+  ctx.fillStyle = "white";
+  for(let y=0; y<550; y+=100) {
+    ctx.fillRect(170, y, 8, 50);
+  }
+
+  drawCar(car.x, car.y, "red");
+
+  if(Math.random() < 0.025) {
+    enemies.push({
+      x: 70 + Math.floor(Math.random()*3)*90,
+      y: -80
+    });
+  }
+
+  enemies.forEach(e => {
+    e.y += speed;
+    drawCar(e.x, e.y, "blue");
+
+    if(
+      car.x < e.x+45 &&
+      car.x+45 > e.x &&
+      car.y < e.y+75 &&
+      car.y+75 > e.y
+    ) {
+      running = false;
+      ctx.fillStyle = "white";
+      ctx.font = "35px Arial";
+      ctx.fillText("GAME OVER!", 65, 270);
+    }
+  });
+
+  enemies = enemies.filter(e => e.y < 600);
+
+  score++;
+  speed += 0.001;
+
+  document.getElementById("score").innerText =
+    Math.floor(score/10);
+
+  if(running) requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener("keydown", e => {
+  if(!running) return;
+
+  if(e.key === "ArrowLeft")
+    car.x = Math.max(55, car.x-25);
+
+  if(e.key === "ArrowRight")
+    car.x = Math.min(250, car.x+25);
+});
+
+canvas.addEventListener("touchstart", e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.touches[0].clientX - rect.left;
+
+  if(x < 175)
+    car.x = Math.max(55, car.x-30);
+  else
+    car.x = Math.min(250, car.x+30);
+});
+</script>
+</body>
+</html>
